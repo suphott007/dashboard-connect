@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Connect - ระบบรับข้อความเรียลไทม์</title>
+  <!-- Google Fonts: Inter & Kanit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Kanit', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(0.98); }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 3s infinite ease-in-out;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- Header Navigation -->
+  <header class="bg-slate-950/80 backdrop-blur border-b border-slate-800 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            Dashboard Connect
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span class="w-1.5 h-1.5 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live Realtime
+            </span>
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">ระบบแสดงข้อความจากผู้ใช้งานผ่านการสแกน QR Code</p>
+        </div>
+      </div>
+
+      <!-- Header Actions -->
+      <div class="flex items-center gap-3">
+        <button id="clearAllBtn" class="hidden sm:inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-colors">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+          ล้างข้อความทั้งหมด
+        </button>
+
+        <a href="/login" target="_blank" class="inline-flex items-center px-3.5 py-2 text-xs font-medium rounded-lg text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 transition-colors">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+          เปิดหน้า Login
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 overflow-hidden">
+    
+    <!-- Left Column: QR Code & Connection Status (4 Cols) -->
+    <div class="lg:col-span-4 flex flex-col gap-6">
+      
+      <!-- QR Code Card -->
+      <div class="bg-slate-800/80 rounded-2xl p-6 border border-slate-700/80 shadow-xl backdrop-blur flex flex-col items-center text-center relative overflow-hidden">
+        <div class="absolute -top-12 -right-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+        
+        <div class="mb-3">
+          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            สแกนเพื่อส่งข้อความ
+          </span>
+        </div>
+
+        <h2 class="text-xl font-bold text-white mb-1">Scan QR Code</h2>
+        <p class="text-xs text-slate-400 mb-5">ใช้กล้องมือถือสแกนเพื่อเข้าสู่ระบบและพิมพ์ข้อความ</p>
+
+        <!-- QR Code Container -->
+        <div class="p-3.5 bg-white rounded-2xl shadow-2xl flex items-center justify-center border-4 border-slate-700">
+          <div id="qrcode" class="w-[200px] h-[200px] flex items-center justify-center"></div>
+        </div>
+
+        <!-- URL Selector & Copy -->
+        <div class="w-full mt-5 space-y-2">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>ที่อยู่ลิงก์สำหรับเข้าใช้งาน:</span>
+            <button id="copyUrlBtn" class="text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              <span id="copyStatusText">คัดลอกลิงก์</span>
+            </button>
+          </div>
+
+          <div class="bg-slate-900/90 rounded-lg p-2.5 border border-slate-700 flex items-center justify-between gap-2">
+            <input id="qrUrlInput" type="text" readonly class="bg-transparent text-xs text-slate-300 w-full outline-none font-mono truncate" />
+          </div>
+
+          <!-- Switch to LAN IP if on localhost -->
+          <div id="lanIpOption" class="hidden text-left bg-slate-900/50 p-2.5 rounded-lg border border-slate-700/60">
+            <span class="text-[11px] text-amber-400 block mb-1 font-medium">💡 สำหรับทดสอบในวง Wi-Fi เดียวกัน:</span>
+            <div id="lanIpButtons" class="flex flex-wrap gap-1.5"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Realtime Stats Card -->
+      <div class="bg-slate-800/80 rounded-2xl p-5 border border-slate-700/80 shadow-xl backdrop-blur">
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">สถิติระบบเรียลไทม์</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-slate-400">ออนไลน์</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+            <div id="onlineCount" class="text-2xl font-bold text-white">0</div>
+            <span class="text-[11px] text-slate-500">คนในระบบ</span>
+          </div>
+
+          <div class="bg-slate-900/60 p-3.5 rounded-xl border border-slate-700/50">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs text-slate-400">ข้อความ</span>
+              <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+            </div>
+            <div id="totalMessagesCount" class="text-2xl font-bold text-white">0</div>
+            <span class="text-[11px] text-slate-500">ข้อความทั้งหมด</span>
+          </div>
+        </div>
+
+        <div id="latestActivity" class="mt-4 pt-3 border-t border-slate-700/60 text-xs text-slate-400 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-indigo-400"></span>
+          <span class="truncate">พร้อมรับข้อความใหม่...</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Live Message Feed (8 Cols) -->
+    <div class="lg:col-span-8 flex flex-col bg-slate-800/80 rounded-2xl border border-slate-700/80 shadow-xl backdrop-blur overflow-hidden">
+      
+      <!-- Feed Header -->
+      <div class="p-5 border-b border-slate-700/80 flex items-center justify-between bg-slate-800/90">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-indigo-500/10 rounded-lg border border-indigo-500/20 text-indigo-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-white">กระดานข้อความที่เข้ามา</h2>
+            <p class="text-xs text-slate-400">ข้อความล่าสุดจะปรากฏด้านบนสุดแบบ Real-time</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Mobile clear button -->
+          <button id="clearAllBtnMobile" class="sm:hidden p-2 text-rose-400 bg-rose-500/10 rounded-lg hover:bg-rose-500/20">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Feed List Container -->
+      <div id="messagesContainer" class="flex-1 p-5 overflow-y-auto custom-scrollbar space-y-3.5 min-h-[420px]">
+        
+        <!-- Empty State (Shown when no messages) -->
+        <div id="emptyState" class="h-full flex flex-col items-center justify-center py-16 text-center">
+          <div class="w-16 h-16 mb-4 rounded-2xl bg-slate-900/80 border border-slate-700/80 flex items-center justify-center text-slate-500 animate-pulse-slow">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </div>
+          <h3 class="text-base font-semibold text-slate-300">ยังไม่มีข้อความส่งเข้ามา</h3>
+          <p class="text-xs text-slate-500 mt-1 max-w-sm">
+            สแกน QR Code จากโทรศัพท์มือถือ เพื่อเข้าสู่ระบบและพิมพ์ส่งข้อความเข้ามาที่นี่
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Socket.io & Dashboard Client JS -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>
